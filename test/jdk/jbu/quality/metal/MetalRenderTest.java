@@ -30,6 +30,7 @@ import quality.util.RenderUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 public class MetalRenderTest {
@@ -46,6 +47,36 @@ public class MetalRenderTest {
                 });
         RenderUtil.checkImage(bi, "metal", "geom.png");
     }
+
+    @Test
+    public void testLinGrad() throws Exception {
+        BufferedImage bi = RenderUtil.capture(120, 120,
+                graphics2D -> {
+                    float[] d = {0.0f, 1.0f};
+                    LinearGradientPaint gp1 =
+                            new LinearGradientPaint(
+                                    new Point2D.Double(10,  10),
+                                    new Point2D.Double( 10, 50),
+                                    d,
+                                    new Color[] {Color.RED, Color.GREEN});
+
+                    graphics2D.setPaint(gp1);
+                    graphics2D.fillRect(10, 10, 50, 50);
+
+                    LinearGradientPaint gp2 =
+                            new LinearGradientPaint(
+                                    new Point2D.Double(30,  30),
+                                    new Point2D.Double( 150, 150), d,
+                                    new Color[] {Color.GREEN, Color.BLUE});
+
+
+                    graphics2D.setPaint(gp2);
+                    graphics2D.fillOval(30, 30, 150, 150);
+                });
+        RenderUtil.checkImage(bi, "metal", "lgrad.png");
+    }
+
+
     @Test
     public void testMetal1() throws Exception {
         JFrame[] f = new JFrame[1];

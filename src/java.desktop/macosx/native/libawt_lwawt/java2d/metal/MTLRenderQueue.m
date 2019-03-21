@@ -589,14 +589,15 @@ Java_sun_java2d_metal_MTLRenderQueue_flushBuffer
                 if (dstOps != NULL) {
                     MTLSDOps *dstCGLOps = (MTLSDOps *)dstOps->privOps;
                     [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
+                        MTLPaints_SetColor(mtlc, pixel);
                         dstCGLOps->configInfo->context->mtlColor = pixel;
                     }];
                 }
-                MTLPaints_SetColor(mtlc, pixel);
             }
             break;
         case sun_java2d_pipe_BufferedOpCodes_SET_GRADIENT_PAINT:
             {
+                J2dTraceNotImplPrimitive("MTLRenderQueue_SET_GRADIENT_PAINT");
                 jboolean useMask= NEXT_BOOLEAN(b);
                 jboolean cyclic = NEXT_BOOLEAN(b);
                 jdouble p0      = NEXT_DOUBLE(b);
@@ -604,9 +605,16 @@ Java_sun_java2d_metal_MTLRenderQueue_flushBuffer
                 jdouble p3      = NEXT_DOUBLE(b);
                 jint pixel1     = NEXT_INT(b);
                 jint pixel2     = NEXT_INT(b);
-                MTLPaints_SetGradientPaint(mtlc, useMask, cyclic,
-                                           p0, p1, p3,
-                                           pixel1, pixel2);
+                if (dstOps != NULL) {
+                    MTLSDOps *dstCGLOps = (MTLSDOps *)dstOps->privOps;
+                    [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
+                        MTLPaints_SetGradientPaint(
+                                dstCGLOps->configInfo->context,
+                                useMask, cyclic,
+                                p0, p1, p3,
+                                pixel1, pixel2);
+                    }];
+                }
             }
             break;
         case sun_java2d_pipe_BufferedOpCodes_SET_LINEAR_GRADIENT_PAINT:

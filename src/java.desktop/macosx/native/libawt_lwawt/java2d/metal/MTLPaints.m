@@ -47,6 +47,7 @@ MTLPaints_ResetPaint(MTLContext *mtlc)
 void
 MTLPaints_SetColor(MTLContext *mtlc, jint pixel)
 {
+    mtlc->compState = sun_java2d_SunGraphics2D_PAINT_ALPHACOLOR;
     //TODO
     J2dTraceNotImplPrimitive("MTLPaints_SetColor");
     J2dTraceLn1(J2D_TRACE_INFO, "MTLPaints_SetColor: pixel=%08x", pixel);
@@ -70,9 +71,24 @@ MTLPaints_SetGradientPaint(MTLContext *mtlc,
                            jdouble p0, jdouble p1, jdouble p3,
                            jint pixel1, jint pixel2)
 {
-    //TODO
+    //TODO Resolve gradient distribution problem
+    //TODO Implement useMask
+    //TODO Implement cyclic
+    //fprintf(stderr,
+    //        "MTLPaints_SetGradientPaint useMask=%d cyclic=%d "
+    //        "p0=%f p1=%f p3=%f pix1=%d pix2=%d\n", useMask, cyclic,
+    //        p0, p1, p3, pixel1, pixel2);
     J2dTraceNotImplPrimitive("MTLPaints_SetGradientPaint");
+
     J2dTraceLn(J2D_TRACE_INFO, "MTLPaints_SetGradientPaint");
+    mtlc->compState = sun_java2d_SunGraphics2D_PAINT_GRADIENT;
+    mtlc->useMask = useMask;
+    mtlc->pixel1 = pixel1;
+    mtlc->pixel2 = pixel2;
+    mtlc->p0 = p0;
+    mtlc->p1 = p1;
+    mtlc->p3 = p3;
+    mtlc->cyclic = cyclic;
 }
 
 /************************** TexturePaint support ****************************/

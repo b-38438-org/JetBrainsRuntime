@@ -48,6 +48,10 @@ struct TxtShaderInOut {
     float2 texCoords;
 };
 
+struct GradShaderInOut {
+    float4 position [[position]];
+};
+
 vertex ColShaderInOut vert_col(VertexInput in [[stage_in]],
 	   constant FrameUniforms& uniforms [[buffer(FrameUniformBuffer)]]) {
     ColShaderInOut out;
@@ -61,6 +65,12 @@ vertex TxtShaderInOut vert_txt(TxtVertexInput in [[stage_in]],
     TxtShaderInOut out;
     out.position = float4(in.position, 1.0);
     out.texCoords = in.texCoords;
+    return out;
+}
+
+vertex GradShaderInOut vert_grad(VertexInput in [[stage_in]]) {
+    GradShaderInOut out;
+    out.position = float4(in.position, 1.0);
     return out;
 }
 
@@ -88,4 +98,13 @@ fragment half4 frag_txt(
                                   min_filter::linear);
     float4 pixelColor = renderTexture.sample(textureSampler, vert.texCoords);
     return half4(pixelColor.r, pixelColor.g, pixelColor.b , pixelColor.a);
+}
+
+fragment half4 frag_grad(GradShaderInOut in [[stage_in]],
+                         constant GradFrameUniforms& uniforms [[buffer(0)]]) {
+    float3 v = float3(in.position.x, in.position.y, 1);
+    float a = (dot(v,uniforms.params)-0.25)*2.0;
+    float b = 1.0 - a;
+    float4 c = b*uniforms.color1 + a*uniforms.color2;
+    return half4(c);
 }

@@ -75,6 +75,15 @@ typedef struct {
     jfloat     extraAlpha;
     jint       xorPixel;
     jint       pixel;
+
+    jdouble    p0;
+    jdouble    p1;
+    jdouble    p3;
+    jboolean   cyclic;
+    jint       pixel1;
+    jint       pixel2;
+
+
     jubyte     r;
     jubyte     g;
     jubyte     b;
@@ -92,6 +101,7 @@ typedef struct {
     id<MTLRenderPipelineState>  mtlPipelineState;
     id<MTLRenderPipelineState>  mtlBlitPipelineState;
     id<MTLRenderPipelineState>  mtlBlitMatrixPipelineState;
+    id<MTLRenderPipelineState>  mtlGradPipelineState;
     id<MTLCommandQueue>         mtlCommandQueue;
     id<MTLCommandBuffer>        mtlCommandBuffer;
     id<MTLTexture>              mtlFrameBuffer;

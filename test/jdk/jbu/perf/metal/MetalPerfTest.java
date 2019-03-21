@@ -179,7 +179,7 @@ public class MetalPerfTest {
             Point2D start = new Point2D.Double(- r,  - 0.5*r);
             Point2D end = new Point2D.Double( 2 * r, r);
             float[] dist = {0.0f, 1.0f};
-            Color[] cls = {colors[id %colors.length], Color.WHITE};
+            Color[] cls = {colors[id %colors.length], colors[(colors.length - id) %colors.length]};
             LinearGradientPaint p =
                     new LinearGradientPaint(start, end, dist, cls);
             g2d.setPaint(p);

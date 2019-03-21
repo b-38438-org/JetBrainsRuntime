@@ -45,6 +45,14 @@ extern MTLContext *MTLSD_MakeMTLContextCurrent(JNIEnv *env,
                                                MTLSDOps *srcOps,
                                                MTLSDOps *dstOps);
 
+#define RGBA_TO_V4(c)              \
+{                                  \
+    (((c) >> 16) & (0xFF))/255.0f, \
+    (((c) >> 8) & 0xFF)/255.0f,    \
+    ((c) & 0xFF)/255.0f,           \
+    (((c) >> 24) & 0xFF)/255.0f    \
+}
+
 /**
  * This table contains the standard blending rules (or Porter-Duff compositing
  * factors) used in glBlendFunc(), indexed by the rule constants from the
@@ -475,22 +483,27 @@ id<MTLRenderCommandEncoder> _createRenderEncoder(MTLContext *mtlc, id<MTLTexture
 
     id <MTLRenderCommandEncoder> mtlEncoder = [cb renderCommandEncoderWithDescriptor:rpd];
 
-    // set viewport and pipeline state
+    // set viewport
     dest = rpd.colorAttachments[0].texture;
     MTLViewport vp = {0, 0, dest.width, dest.height, 0, 1};
     [mtlEncoder setViewport:vp];
-    [mtlEncoder setRenderPipelineState:mtlc->mtlPipelineState];
 
-    // set color from ctx
-    int r = (mtlc->mtlColor >> 16) & (0xFF);
-    int g = (mtlc->mtlColor >> 8) & 0xFF;
-    int b = (mtlc->mtlColor) & 0xFF;
-    int a = (mtlc->mtlColor >> 24) & 0xFF;
+    if (mtlc->compState == sun_java2d_SunGraphics2D_PAINT_ALPHACOLOR) {
+        // set pipeline state
+        [mtlEncoder setRenderPipelineState:mtlc->mtlPipelineState];
+        struct FrameUniforms uf = {RGBA_TO_V4(mtlc->mtlColor)};
+        [mtlEncoder setVertexBytes:&uf length:sizeof(uf) atIndex:FrameUniformBuffer];
+    } else if (mtlc->compState == sun_java2d_SunGraphics2D_PAINT_GRADIENT) {
+        // set viewport and pipeline state
+        [mtlEncoder setRenderPipelineState:mtlc->mtlGradPipelineState];
 
-    vector_float4 color = {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
-    struct FrameUniforms uf = {color};
-    [mtlEncoder setVertexBytes:&uf length:sizeof(uf) atIndex:FrameUniformBuffer];
+        struct GradFrameUniforms uf = {
+            {mtlc->p0, mtlc->p1, mtlc->p3},
+            RGBA_TO_V4(mtlc->pixel1),
+            RGBA_TO_V4(mtlc->pixel2)};
 
+        [mtlEncoder setFragmentBytes: &uf length:sizeof(uf) atIndex:0];
+    }
     return mtlEncoder;
 }
 

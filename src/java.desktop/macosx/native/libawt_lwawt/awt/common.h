@@ -48,6 +48,12 @@ struct FrameUniformsTransform {
     matrix_float4x4 transformMatrix;
 };
 
+struct GradFrameUniforms {
+    vector_float3 params;
+    vector_float4 color1;
+    vector_float4 color2;
+};
+
 struct Vertex {
     float position[3];
 };
