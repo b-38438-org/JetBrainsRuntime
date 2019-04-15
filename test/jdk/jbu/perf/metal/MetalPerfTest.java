@@ -25,6 +25,7 @@ package perf.metal;
 
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -32,8 +33,14 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class MetalPerfTest {
     private final static int N = 500;
@@ -190,6 +197,35 @@ public class MetalPerfTest {
             g2d.setColor(colors[id % colors.length]);
             g2d.fillRect((int)(x[id] - r), (int)(y[id] - r), (int)(2*r), (int)(2*r));
 
+        }
+
+    }
+
+    static class ImgParticleRenderer extends FlatParticleRenderer {
+        BufferedImage dukeImg;
+
+        ImgParticleRenderer(int n, float r) {
+            super(n, r);
+            String testDataStr = System.getProperty("testdata");
+            assertNotNull("testdata property is not set", testDataStr);
+
+            File testData = new File(testDataStr, "perf" + File.separator + "metal");
+            assertTrue("Test data dir does not exist", testData.exists());
+            File dukeFile = new File(testData, "duke.png");
+
+            if (!dukeFile.exists()) throw new RuntimeException(dukeFile.toString() + " not found");
+
+            try {
+                dukeImg = ImageIO.read(dukeFile);
+            } catch (IOException e) {
+                new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void render(Graphics2D g2d, int id, float[] x, float[] y, float[] vx, float[] vy) {
+            g2d.setColor(colors[id % colors.length]);
+            g2d.drawImage(dukeImg, (int)(x[id] - r), (int)(y[id] - r), (int)(2*r), (int)(2*r), null);
         }
 
     }
@@ -413,6 +449,7 @@ public class MetalPerfTest {
     private static final ParticleRenderer segRenderer = new SegParticleRenderer(N, R);
     private static final ParticleRenderer flatQuadRenderer = new FlatQuadParticleRenderer(N, R);
     private static final ParticleRenderer wiredQuadRenderer = new WiredQuadParticleRenderer(N, R);
+    private static final ParticleRenderer imgRenderer = new ImgParticleRenderer(N, R);
 
 
     @Test
@@ -440,6 +477,24 @@ public class MetalPerfTest {
             @Override
             public void render(Graphics2D g2d) {
                 balls.render(g2d, flatBoxRenderer);
+            }
+
+            @Override
+            public void update() {
+                balls.update();
+            }
+        });
+
+        System.out.println(fps);
+    }
+
+    @Test
+    public void testImgBubbles() throws Exception {
+
+        double fps = (new PerfMeter()).exec(new Renderable() {
+            @Override
+            public void render(Graphics2D g2d) {
+                balls.render(g2d, imgRenderer);
             }
 
             @Override
