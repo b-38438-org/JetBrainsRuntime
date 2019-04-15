@@ -218,7 +218,7 @@ public class MetalPerfTest {
             try {
                 dukeImg = ImageIO.read(dukeFile);
             } catch (IOException e) {
-                new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
 
